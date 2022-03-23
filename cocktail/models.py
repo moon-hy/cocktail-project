@@ -1,11 +1,11 @@
 from django.db import models
 
-# Create your models here.
+
 COCKTAIL_BASE = (
     'gin',
     'rum',
     'vodka',
-    'whiskey'
+    'whiskey',
     'brandy',
     'tequila',
     'wine',
@@ -22,6 +22,9 @@ RECIPE_UNIT = (
 class Tag(models.Model):
     name = models.CharField(max_length=255)
 
+    def __str__(self):
+        return self.name
+
 class Recipe(models.Model):
     UNIT_CHOICES = [
         (i+1, base) for i, base in enumerate(RECIPE_UNIT)
@@ -29,7 +32,8 @@ class Recipe(models.Model):
     cocktail = models.ForeignKey(
         'Cocktail',
         related_name='recipe',
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        blank=True
     )
     ingredient = models.ForeignKey(
         'ingredient.Ingredient',
@@ -39,14 +43,17 @@ class Recipe(models.Model):
     volume = models.PositiveSmallIntegerField()
     unit = models.PositiveSmallIntegerField(choices=UNIT_CHOICES)
 
+    def __str__(self):
+        return self.cocktail.name
+
 class Cocktail(models.Model):
     BASE_CHOICES = [
         (i+1, base) for i, base in enumerate(COCKTAIL_BASE)
     ]
     name = models.CharField(max_length=255)
     base = models.PositiveSmallIntegerField(choices=BASE_CHOICES)
-    garnish = models.CharField(max_length=255)
-    description = models.TextField()
+    garnish = models.CharField(max_length=255, blank=True)
+    description = models.TextField(blank=True)
     ingredients = models.ManyToManyField(
         'ingredient.Ingredient',
         through='Recipe',
@@ -55,4 +62,8 @@ class Cocktail(models.Model):
     tags = models.ManyToManyField(
         'Tag',
         related_name='cocktails',
+        blank=True
     )
+
+    def __str__(self):
+        return self.name
