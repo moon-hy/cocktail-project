@@ -1,6 +1,7 @@
+from ctypes.wintypes import tagSIZE
 from rest_framework import serializers
 
-from cocktail.models import Cocktail, Recipe
+from cocktail.models import Cocktail, Recipe, Tag
 
 
 class RecipeSerializer(serializers.ModelSerializer):
@@ -16,11 +17,21 @@ class RecipeSerializer(serializers.ModelSerializer):
         }
         return representation
 
+class TagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model   = Tag
+        fields  = [
+            'name',
+        ]
+
+    def to_representation(self, instance):
+        return instance.name
 
 class CocktailSerializer(serializers.ModelSerializer):
     ingredients = RecipeSerializer(source='recipe', many=True)
     abv         = serializers.SerializerMethodField(method_name='get_abv', read_only=True)
-
+    tags        = TagSerializer(many=True)
+    
     class Meta:
         model   = Cocktail
         fields  = [
