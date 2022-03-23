@@ -11,6 +11,7 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = {
+            'id'            : instance.ingredient.id,
             'ingredient'    : instance.ingredient.name,
             'volume'        : instance.volume,
             'unit'          : instance.get_unit_display()
@@ -25,13 +26,17 @@ class TagSerializer(serializers.ModelSerializer):
         ]
 
     def to_representation(self, instance):
-        return instance.name
+        representation = {
+            'id'            : instance.id,
+            'name'          : instance.name
+        }
+        return representation
 
 class CocktailSerializer(serializers.ModelSerializer):
     ingredients = RecipeSerializer(source='recipe', many=True)
     abv         = serializers.SerializerMethodField(method_name='get_abv', read_only=True)
     tags        = TagSerializer(many=True)
-    
+
     class Meta:
         model   = Cocktail
         fields  = [

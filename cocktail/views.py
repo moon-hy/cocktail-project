@@ -26,6 +26,12 @@ class CocktailList(APIView):
             return Response(serializer.data, status=HTTP_201_CREATED)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
+class CocktailBaseList(APIView):
+    def get(self, request, pk):
+        cocktails   = Cocktail.objects.filter(base=pk)
+        serializer  = CocktailSerializer(cocktails, many=True)
+        return Response(serializer.data, status=HTTP_200_OK)
+
 class CocktailDetail(APIView):
     def get_object(self, pk):
         try:
@@ -37,22 +43,6 @@ class CocktailDetail(APIView):
         cocktail    = self.get_object(pk)
         serializer  = CocktailSerializer(cocktail)
         return Response(serializer.data, status=HTTP_200_OK)
-
-    def put(self, request, pk):
-        cocktail    = self.get_object(pk)
-        serializer  = CocktailSerializer(cocktail, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=HTTP_201_CREATED)
-        return Response(serializer.data, status=HTTP_400_BAD_REQUEST)
-    
-    def patch(self, request, pk):
-        cocktail    = self.get_object(pk)
-        serializer  = CocktailSerializer(cocktail, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=HTTP_200_OK)
-        return Response(serializer.data, status=HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):
         cocktail    = self.get_object(pk)
