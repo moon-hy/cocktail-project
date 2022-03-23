@@ -64,3 +64,9 @@ class IngredientDetail(APIView):
         ingredient  = self.get_object(pk)
         ingredient.delete()
         return Response(status=HTTP_204_NO_CONTENT)
+
+class IngredientCategoryList(APIView):
+    def get(self, request, pk):
+        ingredients = Ingredient.objects.filter(category=pk)
+        serializer  = IngredientSerializer(ingredients, many=True)
+        return Response(serializer.data, status=HTTP_200_OK)
