@@ -19,5 +19,8 @@ class Ingredient(Base):
         on_delete=models.CASCADE
     )
     
+    class Meta:
+        ordering = ['category', 'name']
+
     def __str__(self):
-        return self.name
+        return f'{self.category}|{self.name}|{self.abv}'
