@@ -1,4 +1,3 @@
-from functools import partial
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.status import (
@@ -9,12 +8,10 @@ from rest_framework.status import (
 )
 
 from django.http import Http404
-import ingredient
-from ingredient import serializers
 
 from ingredient.models import Category, Ingredient
 from ingredient.serializers import CategorySerializer, IngredientSerializer
-# Create your views here.
+
 
 class CategoryList(APIView):
     def get(self, request):
