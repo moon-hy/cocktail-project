@@ -1,3 +1,4 @@
+from re import search
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.status import (
@@ -9,13 +10,47 @@ from rest_framework.status import (
 
 from django.http import Http404
 
-from cocktail.models import Cocktail
-from cocktail.serializers import CocktailSerializer
+from cocktail.models import Base, Cocktail, Tag
+from cocktail.serializers import CocktailSerializer, BaseSerializer, TagSerializer
 
+class CocktailBase(APIView):
+    def get(self, request):
+        bases       = Base.objects.all()
+        serializer  = BaseSerializer(bases, many=True)
+        return Response(serializer.data, status=HTTP_200_OK)
+
+class CocktailListByBase(APIView):
+    def get(self, request, pk):
+        base        = Base.objects.get(pk=pk)
+        cocktails   = base.cocktails
+        serializer  = CocktailSerializer(cocktails, many=True)
+        return Response(serializer.data, status=HTTP_200_OK)
+
+class CocktailTag(APIView):
+    def get(self, request):
+        query      = request.query_params.get('query')
+        tags        = Tag.objects.all()
+        if query:
+            tags    = tags.filter(name__icontains=query)
+        serializer  = TagSerializer(tags, many=True)
+        return Response(serializer.data, status=HTTP_200_OK)
+
+class CocktailListByTag(APIView):
+    def get(self, request, pk):
+        tag         = Tag.objects.get(pk=pk)
+        cocktails   = tag.cocktails
+        serializer  = CocktailSerializer(cocktails, many=True)
+        return Response(serializer.data, status=HTTP_200_OK)
 
 class CocktailList(APIView):
     def get(self, request):
+        """
+        GET /cocktails?query={query}
+        """
+        query       = request.query_params.get('query')
         cocktails   = Cocktail.objects.all()
+        if query:
+            cocktails = cocktails.filter(name__icontains=query)
         serializer  = CocktailSerializer(cocktails, many=True)
         return Response(serializer.data, status=HTTP_200_OK)
     
@@ -25,12 +60,6 @@ class CocktailList(APIView):
             serializer.save()
             return Response(serializer.data, status=HTTP_201_CREATED)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
-
-class CocktailBaseList(APIView):
-    def get(self, request, pk):
-        cocktails   = Cocktail.objects.filter(base=pk)
-        serializer  = CocktailSerializer(cocktails, many=True)
-        return Response(serializer.data, status=HTTP_200_OK)
 
 class CocktailDetail(APIView):
     def get_object(self, pk):

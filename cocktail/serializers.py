@@ -1,8 +1,15 @@
 from ctypes.wintypes import tagSIZE
+from pyexpat import model
 from rest_framework import serializers
 
-from cocktail.models import Cocktail, Recipe, Tag
+from cocktail.models import Base, Cocktail, Recipe, Tag
 
+class BaseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model   = Base
+        fields  = [
+            'id', 'name'
+        ]
 
 class RecipeSerializer(serializers.ModelSerializer):
     class Meta:
@@ -62,7 +69,7 @@ class CocktailSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation  = super().to_representation(instance)
-        representation['base']  = instance.get_base_display()
+        representation['base']  = instance.base.name
         return representation
 
     def get_abv(self, instance):
