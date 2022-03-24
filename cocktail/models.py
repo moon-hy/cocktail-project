@@ -1,3 +1,4 @@
+from unicodedata import name
 from django.db import models
 
 
@@ -33,12 +34,23 @@ RECIPE_UNIT = (
     'fill-up',
     'bsp',
     'leaves',
+    'slices',
+    'parts',
 )
-class Tag(models.Model):
-    name = models.CharField(max_length=255)
+class SimpleModel(models.Model):
+    name = models.CharField(max_length=255, unique=True, db_index=True)
 
     def __str__(self):
         return self.name
+
+class Tag(SimpleModel):
+    pass
+
+class Base(SimpleModel):
+    pass
+
+class Method(SimpleModel):
+    pass
 
 class Recipe(models.Model):
     UNIT_CHOICES = [
@@ -57,21 +69,28 @@ class Recipe(models.Model):
     )
     volume      = models.PositiveSmallIntegerField()
     unit        = models.PositiveSmallIntegerField(choices=UNIT_CHOICES)
+    optional    = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.cocktail.name
+        return f'{self.cocktail.name} <- {self.ingredient.name}'
 
 class Cocktail(models.Model):
-    BASE_CHOICES = [
-        (i+1, base) for i, base in enumerate(COCKTAIL_BASE)
-    ]
     GLASS_CHOICES = [
         (i+1, glass) for i, glass in enumerate(COCKTAIL_GLASS)
     ]
 
     name        = models.CharField(max_length=255)
-    base        = models.PositiveSmallIntegerField(choices=BASE_CHOICES)
+    base        = models.ForeignKey(
+        'Base',
+        related_name='cocktails',
+        on_delete=models.CASCADE,
+    )
     glass       = models.PositiveSmallIntegerField(choices=GLASS_CHOICES, default=1)
+    method      = models.ManyToManyField(
+        'Method',
+        related_name='cocktails',
+        blank=True
+    )
     garnish     = models.CharField(max_length=255, blank=True)
     description = models.TextField(blank=True)
     ingredients = models.ManyToManyField(
@@ -84,6 +103,6 @@ class Cocktail(models.Model):
         related_name='cocktails',
         blank=True
     )
-
+    
     def __str__(self):
         return self.name
