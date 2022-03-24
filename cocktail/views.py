@@ -28,6 +28,9 @@ class CocktailListByBase(APIView):
 
 class CocktailTag(APIView):
     def get(self, request):
+        """
+        GET /cocktails/tag?query={query}
+        """
         query      = request.query_params.get('query')
         tags        = Tag.objects.all()
         if query:
