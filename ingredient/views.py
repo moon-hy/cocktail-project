@@ -22,6 +22,13 @@ class CategoryList(APIView):
 class IngredientList(APIView):
     def get(self, request):
         ingredients = Ingredient.objects.all()
+
+        if query := request.query_params.get('query'):
+            ingredients = ingredients.filter(name__icontains=query)
+            
+        if category := request.query_params.get('category'):
+            ingredients = ingredients.filter(category=category)
+
         serializer  = IngredientSerializer(ingredients, many=True)
         return Response(serializer.data, status=HTTP_200_OK)
 
