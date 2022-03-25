@@ -1,4 +1,3 @@
-from re import search
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.status import (
@@ -10,27 +9,11 @@ from rest_framework.status import (
 
 from django.http import Http404
 
-from cocktail.models import Base, Cocktail, Tag
-from cocktail.serializers import CocktailSerializer, BaseSerializer, TagSerializer
-
-class CocktailBase(APIView):
-    def get(self, request):
-        bases       = Base.objects.all()
-        serializer  = BaseSerializer(bases, many=True)
-        return Response(serializer.data, status=HTTP_200_OK)
-
-class CocktailListByBase(APIView):
-    def get(self, request, pk):
-        base        = Base.objects.get(pk=pk)
-        cocktails   = base.cocktails
-        serializer  = CocktailSerializer(cocktails, many=True)
-        return Response(serializer.data, status=HTTP_200_OK)
+from cocktail.models import Cocktail, Tag
+from cocktail.serializers import CocktailSerializer, TagSerializer
 
 class CocktailTag(APIView):
     def get(self, request):
-        """
-        GET /cocktails/tag?query={query}
-        """
         query      = request.query_params.get('query')
         tags        = Tag.objects.all()
         if query:
@@ -47,21 +30,44 @@ class CocktailListByTag(APIView):
 
 class CocktailList(APIView):
     def get(self, request):
-        """
-        GET /cocktails?query={query}
-        """
-        query       = request.query_params.get('query')
         cocktails   = Cocktail.objects.all()
-        if query:
+
+        if query := request.query_params.get('query'):
             cocktails = cocktails.filter(name__icontains=query)
+
+        if base := request.query_params.get('base'):
+            cocktails = cocktails.filter(base=base)
+
+        if min_abv := request.query_params.get('min'):
+            cocktails = cocktails.filter(abv__gte=min_abv)
+
+        if max_abv := request.query_params.get('max'):
+            cocktails = cocktails.filter(abv__lte=max_abv)
+            
         serializer  = CocktailSerializer(cocktails, many=True)
-        return Response(serializer.data, status=HTTP_200_OK)
+        meta        = {
+            'total_count': cocktails.count()
+        }
+        return Response({
+            'meta': meta,
+            'cocktails': serializer.data
+        }, status=HTTP_200_OK)
     
     def post(self, request):
+
+        """태그가 없으면 추가."""
+        if tags := request.data.get('tags'):
+            for tag in tags:
+                tag_obj, created = Tag.objects.get_or_create(pk=tag)
+                if created:
+                    tag_obj.save()
+        
         serializer  = CocktailSerializer(data=request.data)
+        
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=HTTP_201_CREATED)
+        
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
 class CocktailDetail(APIView):

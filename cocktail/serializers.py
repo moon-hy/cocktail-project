@@ -1,15 +1,22 @@
-from ctypes.wintypes import tagSIZE
-from pyexpat import model
 from rest_framework import serializers
 
-from cocktail.models import Base, Cocktail, Recipe, Tag
+from django.db import transaction
 
-class BaseSerializer(serializers.ModelSerializer):
+from cocktail.models import Cocktail, Method, Recipe, Tag
+
+
+class MethodSerializer(serializers.ModelSerializer):
     class Meta:
-        model   = Base
+        model   = Method
         fields  = [
-            'id', 'name'
+            'name',
         ]
+    
+    def to_representation(self, instance):
+        return {
+            'id'    : instance.id,
+            'name'  : instance.name,
+        }
 
 class RecipeSerializer(serializers.ModelSerializer):
     class Meta:
@@ -19,10 +26,13 @@ class RecipeSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         representation = {
             'id'            : instance.ingredient.id,
-            'ingredient'    : instance.ingredient.name,
+            'name'          : instance.ingredient.name,
             'volume'        : instance.volume,
-            'unit'          : instance.get_unit_display()
+            'unit'          : instance.unit
         }
+        if instance.optional:
+            representation['optional'] = True
+            
         return representation
 
 class TagSerializer(serializers.ModelSerializer):
@@ -31,53 +41,42 @@ class TagSerializer(serializers.ModelSerializer):
         fields  = [
             'name',
         ]
-
+    
     def to_representation(self, instance):
-        representation = {
-            'id'            : instance.id,
-            'name'          : instance.name
+        return {
+            'name'  : instance.name,
         }
-        return representation
 
 class CocktailSerializer(serializers.ModelSerializer):
-    ingredients = RecipeSerializer(source='recipe', many=True)
-    abv         = serializers.SerializerMethodField(method_name='get_abv', read_only=True)
-    tags        = TagSerializer(many=True)
-
+    ingredients = RecipeSerializer(
+        source='recipe',
+        many=True
+    )
+    
     class Meta:
         model   = Cocktail
         fields  = [
-            'id', 'name', 'base', 'garnish', 'description', 'ingredients', 'tags', 'abv',
+            'id', 'name', 'base', 'garnish', 'methods', 'description', 'ingredients', 'tags', 'abv',
         ]
     
     def create(self, validated_data):
-        ingredients     = validated_data.pop('recipe', [])
-        tags            = validated_data.pop('tags',[])
+        with transaction.atomic():
+            ingredients     = validated_data.pop('recipe', [])
+            methods         = validated_data.pop('methods', [])
+            tags            = validated_data.pop('tags',[])
 
-        cocktail = Cocktail.objects.create(**validated_data)
-        for ingredient in ingredients:
-            """ Create Middle Table """
-            Recipe.objects.create(
-                cocktail=cocktail, **ingredient,
-            ).save()
+            cocktail = Cocktail.objects.create(**validated_data)
+            for ingredient in ingredients:
+                """ Create Middle Table """
+                Recipe.objects.create(
+                    cocktail=cocktail, **ingredient,
+                ).save()
 
-        for tag in tags:
-            """ Add ManyToMany Tag """
-            cocktail.tags.add(tag)
+            for tag in tags:
+                cocktail.tags.add(tag)
 
-        return cocktail
+            for method in methods:
+                cocktail.methods.add(method)
 
-    def to_representation(self, instance):
-        representation  = super().to_representation(instance)
-        representation['base']  = instance.base.name
-        return representation
-
-    def get_abv(self, instance):
-        total_volume = 1
-        total_alcohol = 0
-
-        for ingredient in instance.recipe.all():
-            total_alcohol += ingredient.volume*ingredient.ingredient.abv 
-            total_volume += ingredient.volume
-
-        return round(total_alcohol/total_volume, 1)
+            cocktail.save()
+            return cocktail
