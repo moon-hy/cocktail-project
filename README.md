@@ -1,7 +1,17 @@
-- [재료 검색](#재료-검색)
-- [칵테일 검색](#칵테일-검색)
-- [칵테일 등록](#칵테일-등록)
-- [칵테일 상세정보](#칵테일-상세정보)
+- 재료
+    - [재료 검색](#재료-검색)
+    - [재료 등록](#재료-등록)
+    - [재료 상세 정보](#재료-상세-정보)
+    - [재료 삭제](#재료-삭제)
+    - [재료 수정(전체)](#재료-수정-전체)
+    - [재료 수정(일부)](#재료-수정-일부)
+- 칵테일
+    - [칵테일 검색](#칵테일-검색)
+    - [칵테일 등록](#칵테일-등록)
+    - [칵테일 상세정보](#칵테일-상세-정보)
+    - [칵테일 삭제](#칵테일-삭제)
+    - [칵테일 태그 검색](#칵테일-태그-검색)
+    - [태그로 칵테일 검색](#태그로-칵테일-검색)
 
 # 재료 검색
 
@@ -28,10 +38,174 @@ __ingredients__
 |-----------|-------|-----------|
 |id         |Integer|재료 고유 아이디|
 |name       |String |재료 이름|
+|category   |String |[카테고리](#category) 재료 카테고리|
+
+---
+
+# 재료 등록
+
+## Request
+
+__URL__
+
+```
+POST /api/ingredients
+```
+__Parameter__
+
+|Name       |Type   |Description|Required|
+|-----------|-------|-----------|--------|
+|name       |String |재료 이름|O|
+|description|String |재료 설명|X|
+|abv        |String |재료 도수. 소수점 한 자리 까지 표시|O|
+|category   |String |[카테고리](#category) 재료 카테고리|O|
+
+__Example__
+
+```
+{
+    "name": "whiskey",
+    "description": "this is one of spirits",
+    "abv": "40.0",
+    "category": "spirits"
+}
+```
+
+## Response
+    HTTP 201 CREATED
+    Content-Type: application/json
+
+|Name       |Type   |Description|
+|-----------|-------|-----------|
+|id         |Integer|재료 고유 아이디|
+|name       |String |재료 이름|
 |description|String |재료 설명|
 |abv        |String |재료 도수. 소수점 한 자리 까지 표시|
 |category   |String |[카테고리](#category) 재료 카테고리|
 
+---
+
+# 재료 상세 정보
+
+## Request
+
+__URL__
+
+```
+GET /api/ingredients/{ingredient_id}
+```
+
+## Response
+    HTTP 200 OK
+    Content-Type: application/json
+
+|Name       |Type   |Description|
+|-----------|-------|-----------|
+|id         |Integer|재료 고유 아이디|
+|name       |String |재료 이름|
+|description|String |재료 설명|
+|abv        |String |재료 도수. 소수점 한 자리 까지 표시|
+|category   |String |[카테고리](#category) 재료 카테고리|
+
+---
+
+# 재료 삭제
+
+## Request
+
+__URL__
+```
+DELETE /api/ingredients/{ingredient_id}
+```
+
+## Response
+    HTTP 204 No Content
+    Content-Type: application/json
+
+---
+
+# 재료 수정 (전체)
+
+## Request
+
+__URL__
+```
+PUT /api/ingredients/{ingredient_id}
+```
+
+__Parameter__
+
+|Name       |Type   |Description|Required|
+|-----------|-------|-----------|--------|
+|name       |String |재료 이름|O|
+|description|String |재료 설명|X|
+|abv        |String |재료 도수. 소수점 한 자리 까지 표시|O|
+|category   |String |[카테고리](#category) 재료 카테고리|O|
+
+__Example__
+
+```
+{
+    "name": "whiskey",
+    "description": "this is one of spirits",
+    "abv": "40.0",
+    "category": "spirits"
+}
+```
+
+## Response
+    HTTP 200 OK
+    Content-Type: application/json
+
+|Name       |Type   |Description|
+|-----------|-------|-----------|
+|id         |Integer|재료 고유 아이디|
+|name       |String |재료 이름|
+|description|String |재료 설명|
+|abv        |String |재료 도수. 소수점 한 자리 까지 표시|
+|category   |String |[카테고리](#category) 재료 카테고리|
+
+---
+
+# 재료 수정 (일부)
+
+## Request
+
+__URL__
+```
+PATCH /api/ingredients/{ingredient_id}
+```
+
+__Parameter__
+
+|Name       |Type   |Description|Required|
+|-----------|-------|-----------|--------|
+|name       |String |재료 이름|X|
+|description|String |재료 설명|X|
+|abv        |String |재료 도수. 소수점 한 자리 까지 표시|X|
+|category   |String |[카테고리](#category) 재료 카테고리|X|
+
+__Example__
+
+```
+{
+    "description": "whiskey is a type of distilled alcoholic beverage made from fermented grain mash."
+}
+```
+
+## Response
+    HTTP 200 OK
+    Content-Type: application/json
+
+|Name       |Type   |Description|
+|-----------|-------|-----------|
+|id         |Integer|재료 고유 아이디|
+|name       |String |재료 이름|
+|description|String |재료 설명|
+|abv        |String |재료 도수. 소수점 한 자리 까지 표시|
+|category   |String |[카테고리](#category) 재료 카테고리|
+
+---
 
 # 칵테일 검색
 
@@ -42,6 +216,7 @@ __URL__
 ```
 GET /api/cocktails
 ```
+
 __Parameter__
 
 |Name    |Type        |Description                 |Required|
@@ -52,9 +227,8 @@ __Parameter__
 |max     |Integer     |최대 도수로 필터링       |X       |
 
 
----
-
 ## Response
+
 __meta__
 
 |Name        |Type        |Description|
@@ -67,22 +241,20 @@ __cocktails__
 |------------|----------------|-----------|
 |id          |Integer         |칵테일 고유 아이디|
 |name        |String          |칵테일 이름|
-|garnish     |String          |칵테일 가니쉬 설명|
-|methods     |String[]        |[칵테일 기법](#method) 참고|
-|description |String          |칵테일 설명|
-|ingredients |Recipe[]        |칵테일 재료 리스트. [___RecipeIngredient___](#recipeingredient) 참고|
-|tags        |String[]        |칵테일 태그 리스트.|
-|abv         |String          |칵테일 도수. 소수점 한 자리 까지 표시|
+|base        |String          |칵테일 베이스|
 
+---
 
 # 칵테일 등록
 
 ## Request
 
 __URL__
+
 ```
 POST /api/cocktails
 ```
+
 __Parameter__
 
 |Name            |Type        |Description|Required|
@@ -126,7 +298,120 @@ __Content example__
 ```
     
 ## Response
+    HTTP 201 CREATED
+    Content-type: application/json
 
+---
+
+# 칵테일 상세 정보
+
+## Request
+
+__URL__
+```
+GET /api/cocktails/{cocktail_id}
+```
+
+## Response
+    HTTP 200 OK
+    Content-type: application/json
+
+|Name        |Type            |Description|
+|------------|----------------|-----------|
+|id          |Integer         |칵테일 고유 아이디|
+|name        |String          |칵테일 이름|
+|garnish     |String          |칵테일 가니쉬 설명|
+|methods     |String[]        |[칵테일 기법](#method) 참고|
+|description |String          |칵테일 설명|
+|ingredients |Recipe[]        |칵테일 재료 리스트. [___RecipeIngredient___](#recipeingredient) 참고|
+|tags        |String[]        |칵테일 태그 리스트.|
+|abv         |String          |칵테일 도수. 소수점 한 자리 까지 표시|
+
+
+---
+
+# 칵테일 삭제
+
+## Request
+
+__URL__
+```
+DELETE /api/cocktails/{cocktail_id}
+```
+
+## Response
+    HTTP 204 No Content
+    Content-Type: application/json
+
+
+# 칵테일 태그 검색
+
+## Request
+
+__URL__
+```
+GET /api/cocktails/tags
+```
+
+__Parameter__
+
+|Name            |Type        |Description|Required|
+|----------------|------------|-----------|--------|
+|query           |String      |이름으로 검색|X|
+
+
+## Response
+    HTTP 200 OK
+    Content-Type: application/json
+
+|Name            |Type        |Description|
+|----------------|------------|-----------|
+|name           |String      |태그 이름(PK)|
+
+
+---
+
+# 태그로 칵테일 검색
+
+## Request
+
+__URL__
+
+```
+GET /api/cocktails/tags/{tag_name}
+```
+
+__Parameter__
+
+|Name    |Type        |Description                 |Required|
+|--------|------------|----------------------------|--------|
+|query   |String      |이름으로 검색              |X       |
+|base    |String      |베이스로 필터링. 아래 ___base___ 참고|X       |
+|min     |Integer     |최소 도수로 필터링       |X       |
+|max     |Integer     |최대 도수로 필터링       |X       |
+
+## Response
+
+__meta__
+
+|Name        |Type        |Description|
+|------------|------------|-----------|
+|total_count |Integer     |검색된 칵테일의 수|
+
+__cocktails__
+
+|Name        |Type            |Description|
+|------------|----------------|-----------|
+|id          |Integer         |칵테일 고유 아이디|
+|name        |String          |칵테일 이름|
+|base        |String          |칵테일 베이스|
+
+
+
+
+
+
+---
 ---
 
 
