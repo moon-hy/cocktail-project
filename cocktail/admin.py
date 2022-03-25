@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from cocktail.models import (
-    Cocktail, Tag, Recipe, Base, Method
+    Cocktail, Tag, Recipe, Method
 )
 # Register your models here.
 class RecipeInline(admin.TabularInline):
@@ -9,10 +9,10 @@ class RecipeInline(admin.TabularInline):
     extra = 3
 
 class CocktailAdmin(admin.ModelAdmin):
+    readonly_fields = ('abv',)
     inlines = (RecipeInline,)
 
 admin.site.register(Cocktail, CocktailAdmin)
 admin.site.register(Tag)
 admin.site.register(Recipe)
-admin.site.register(Base)
 admin.site.register(Method)
