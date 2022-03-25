@@ -32,7 +32,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         }
         if instance.optional:
             representation['optional'] = True
-            
+
         return representation
 
 class TagSerializer(serializers.ModelSerializer):
@@ -80,3 +80,11 @@ class CocktailSerializer(serializers.ModelSerializer):
 
             cocktail.save()
             return cocktail
+
+class CocktailListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model   = Cocktail
+        fields  = [
+            'id', 'name', 'base',
+        ]
+        
