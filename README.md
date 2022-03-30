@@ -1,5 +1,12 @@
-- 게정
+# Model
+
+![model](./readme/model.png)
+
+- 어카운트
     - [계정 정보](#계정-정보)
+
+- 유저
+    - [유저 등록](#유저-등록)
 
 - 재료
     - [재료 검색](#재료-검색)
@@ -20,6 +27,15 @@
     - [칵테일 삭제](#칵테일-삭제)
     - [칵테일 태그 검색](#칵테일-태그-검색)
     - [태그로 칵테일 검색](#태그로-칵테일-검색)
+    - [만들 수 있는 칵테일](#만들-수-있는-칵테일)
+
+
+# HEADER
+
+__HEADER__
+|Key|Value|
+|---|---|
+|Authorization|Token {auth_token}|
 
 
 # 계정 정보
@@ -42,6 +58,35 @@ GET /api/account
 |name       |String |유저 이름|
 |favorites  |Integer[]|유저가 favorite한 칵테일 id 리스트|
 |shelf      |Integer |유저 선반에 등록된 재료 id 리스트|
+
+---
+
+# 유저 등록
+
+## Request
+
+__URL__
+
+```
+POST /api/users
+```
+
+__Parameter__
+
+|Name    |Type        |Description                 |Required|
+|--------|------------|----------------------------|--------|
+|username|String      |유저 이름(아이디)|O|
+|password|String      |유저 비밀번호|O|
+
+
+## Response
+    HTTP 201 Created
+    Content-Type: application/json
+
+|Name       |Type   |Description|
+|-----------|-------|-----------|
+|username|String|유저 이름(아이디)|
+|token|String |유저 토큰|
 
 ---
 
@@ -75,7 +120,7 @@ __ingredients__
 ---
 
 # 재료 등록
-
+    관리자 권한 필요
 ## Request
 
 __URL__
@@ -83,6 +128,7 @@ __URL__
 ```
 POST /api/ingredients
 ```
+
 __Parameter__
 
 |Name       |Type   |Description|Required|
@@ -502,6 +548,35 @@ __Parameter__
 |base    |String      |베이스로 필터링. 아래 ___base___ 참고|X       |
 |min     |Integer     |최소 도수로 필터링       |X       |
 |max     |Integer     |최대 도수로 필터링       |X       |
+
+## Response
+
+__meta__
+
+|Name        |Type        |Description|
+|------------|------------|-----------|
+|total_count |Integer     |검색된 칵테일의 수|
+
+__cocktails__
+
+|Name        |Type            |Description|
+|------------|----------------|-----------|
+|id          |Integer         |칵테일 고유 아이디|
+|name        |String          |칵테일 이름|
+|base        |String          |칵테일 베이스|
+
+
+---
+
+# 만들 수 있는 칵테일
+
+## Request
+
+__URL__
+
+```
+GET /api/cocktails/available
+```
 
 ## Response
 
