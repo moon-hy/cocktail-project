@@ -40,8 +40,8 @@ class UserView(APIView):
         return Response(serializer.data, status=HTTP_200_OK)
 
     def post(self, request):
-        user        = request.data.get('user', {})
-        serializer  = SignupSerializer(data=user)
+        serializer  = SignupSerializer(data=request.data)
+        
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=HTTP_201_CREATED)
