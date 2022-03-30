@@ -15,7 +15,7 @@ class IngredientSerializer(serializers.ModelSerializer):
     class Meta:
         model   = Ingredient
         fields  = [
-            'id', 'name', 'description', 'abv', 'category',
+            'id', 'name', 'description', 'abv', 'category', 'cocktails',
         ]
 
     def to_representation(self, instance):

@@ -77,3 +77,28 @@ class IngredientCategoryList(APIView):
         ingredients = Ingredient.objects.filter(category=pk)
         serializer  = IngredientSerializer(ingredients, many=True)
         return Response(serializer.data, status=HTTP_200_OK)
+
+class IngredientShelve(APIView):
+    def get(self, request, pk):
+        account     = request.user.account
+        ingredient  = Ingredient.objects.get(pk=pk)
+        
+        return Response({
+            'ingredient': ingredient.name,
+            'shelved': account.is_shelved(ingredient),
+        })
+
+    def post(self, request, pk):
+        account     = request.user.account
+        ingredient  = Ingredient.objects.get(pk=pk)
+        account.shelve(ingredient)
+
+        serializer  = IngredientSerializer(ingredient)
+        return Response(serializer.data, status=HTTP_201_CREATED)
+
+    def delete(self, request, pk):
+        account     = request.user.account
+        ingredient  = Ingredient.objects.get(pk=pk)
+        account.unshelve(ingredient)
+
+        return Response(status=HTTP_204_NO_CONTENT)
