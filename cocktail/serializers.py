@@ -56,7 +56,7 @@ class CocktailSerializer(serializers.ModelSerializer):
     class Meta:
         model   = Cocktail
         fields  = [
-            'id', 'name', 'base', 'garnish', 'methods', 'description', 'ingredients', 'tags', 'abv',
+            'id', 'name', 'base', 'glass', 'garnish', 'methods', 'description', 'ingredients', 'tags', 'abv',
         ]
     
     def create(self, validated_data):

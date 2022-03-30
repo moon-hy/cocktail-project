@@ -14,18 +14,18 @@ COCKTAIL_BASE = (
 )
 
 COCKTAIL_GLASS = (
-    'any',
-    'hot-drink', 
-    'collins', 
-    'highball', 
-    'martini', 
-    'hurricane', 
-    'white-wine', 
-    'old-fashioned', 
-    'margarita', 
-    'shot', 
-    'champagne-tulip', 
-    'champagne-flute'
+    ('any', 'any',),
+    ('hot-drink', 'hot-drink'),
+    ('collins', 'collins'),
+    ('highball', 'highball'),
+    ('martini', 'martini'),
+    ('hurricane', 'hurricane'),
+    ('white-wine', 'white-wine'),
+    ('old-fashoined', 'old-fashioned'),
+    ('margarita', 'margarita'),
+    ('shot', 'shot'),
+    ('champagne-tulip', 'champagne-tulip'),
+    ('champagne-flute', 'champagne-flute'),
 )
 
 UNIT_CHOICES = (
@@ -71,13 +71,9 @@ class Recipe(models.Model):
         return f'{self.cocktail.name} <- {self.ingredient.name}'
 
 class Cocktail(models.Model):
-    GLASS_CHOICES = [
-        (i+1, glass) for i, glass in enumerate(COCKTAIL_GLASS)
-    ]
-
     name        = models.CharField(max_length=255)
     base        = models.CharField(max_length=32, choices=COCKTAIL_BASE)
-    glass       = models.PositiveSmallIntegerField(choices=GLASS_CHOICES, default=1)
+    glass       = models.CharField(max_length=32, choices=COCKTAIL_GLASS, default='any')
     methods     = models.ManyToManyField(
         'Method',
         related_name='cocktails',
@@ -114,3 +110,6 @@ class Cocktail(models.Model):
 
     def __str__(self):
         return self.name
+
+    def is_available(self, account):
+        return all([ingredient in account.shelf for ingredient in self.ingredients])

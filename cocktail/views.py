@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.status import (
@@ -8,10 +9,11 @@ from rest_framework.status import (
 )
 
 from django.http import Http404
+from django.db.models import Q, Count
 
 from cocktail.models import Cocktail, Tag
 from cocktail.serializers import CocktailSerializer, CocktailListSerializer, TagSerializer
-
+from account.models import Account
 
 def cocktail_filter(cocktails, request):
     if query := request.query_params.get('query'):
@@ -90,3 +92,47 @@ class CocktailDetail(APIView):
         cocktail    = self.get_object(pk)
         cocktail.delete()
         return Response(status=HTTP_204_NO_CONTENT)
+
+class CocktailFavorite(APIView):
+    def get(self, request, pk):
+        account     = request.user.account
+        cocktail    = Cocktail.objects.get(pk=pk)
+
+        return Response({
+            'favorited': account.is_favorited(cocktail),
+            'total_number': cocktail.favorited.count()
+        })
+
+    def post(self, request, pk):
+        account     = request.user.account
+        cocktail    = Cocktail.objects.get(pk=pk)
+        account.favorite(cocktail)
+
+        serializer  = CocktailSerializer(cocktail)
+
+        return Response(serializer.data, status=HTTP_201_CREATED)
+
+    def delete(self, request, pk):
+        account     = request.user.account
+        cocktail    = Cocktail.objects.get(pk=pk)
+        account.unfavorite(cocktail)
+
+        return Response(status=HTTP_204_NO_CONTENT)
+
+class CocktailAvilable(APIView):
+    def get(self, request):
+        account     = request.user.account
+        shelf_set   = set(account.shelf.all())
+        q           = Q(recipe__ingredient__in=shelf_set) | Q(recipe__optional=True)
+
+        cocktails   = Cocktail.objects.annotate(
+                matches=Count('recipe', filter=q)
+            ).filter(
+                matches__gte=Count('recipe')
+            ).prefetch_related(
+                'ingredients'
+            )
+
+        serializer  = CocktailListSerializer(cocktails, many=True)
+
+        return Response(serializer.data, status=HTTP_200_OK)
