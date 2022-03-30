@@ -1,3 +1,6 @@
+- 게정
+    - [계정 정보](#계정-정보)
+
 - 재료
     - [재료 검색](#재료-검색)
     - [재료 등록](#재료-등록)
@@ -5,13 +8,42 @@
     - [재료 삭제](#재료-삭제)
     - [재료 수정(전체)](#재료-수정-전체)
     - [재료 수정(일부)](#재료-수정-일부)
+    - [재료 담기](#재료-담기)
+    - [재료 빼기](#재료-빼기)
+
 - 칵테일
     - [칵테일 검색](#칵테일-검색)
     - [칵테일 등록](#칵테일-등록)
     - [칵테일 상세정보](#칵테일-상세-정보)
+    - [칵테일 Favorite](#칵테일-favorite)
+    - [칵테일 Unfavorite](#칵테일-unfavorite)
     - [칵테일 삭제](#칵테일-삭제)
     - [칵테일 태그 검색](#칵테일-태그-검색)
     - [태그로 칵테일 검색](#태그로-칵테일-검색)
+
+
+# 계정 정보
+
+## Request
+
+__URL__
+
+```
+GET /api/account
+```
+
+## Response
+    HTTP 200 OK
+    Content-Type: application/json
+
+|Name       |Type   |Description|
+|-----------|-------|-----------|
+|id         |Integer|유저 고유 아이디|
+|name       |String |유저 이름|
+|favorites  |Integer[]|유저가 favorite한 칵테일 id 리스트|
+|shelf      |Integer |유저 선반에 등록된 재료 id 리스트|
+
+---
 
 # 재료 검색
 
@@ -207,6 +239,44 @@ __Example__
 
 ---
 
+# 재료 담기
+
+## Request
+
+__URL__
+```
+POST /api/ingredients/{ingredient_id}/shelve
+```
+
+## Response
+    HTTP 200 OK
+    Content-Type: application/json
+
+|Name       |Type   |Description|
+|-----------|-------|-----------|
+|id         |Integer|재료 고유 아이디|
+|name       |String |재료 이름|
+|description|String |재료 설명|
+|abv        |String |재료 도수. 소수점 한 자리 까지 표시|
+|category   |String |[카테고리](#category) 재료 카테고리|
+
+---
+
+# 재료 빼기
+
+## Request
+
+__URL__
+```
+DELETE /api/ingredients/{ingredient_id}/shelve
+```
+
+## Response
+    HTTP 204 NO CONTENT
+    Content-Type: application/json
+
+---
+
 # 칵테일 검색
 
 ## Request
@@ -222,7 +292,7 @@ __Parameter__
 |Name    |Type        |Description                 |Required|
 |--------|------------|----------------------------|--------|
 |query   |String      |이름으로 검색              |X       |
-|base    |String      |베이스로 필터링. 아래 ___base___ 참고|X       |
+|base    |String      |베이스로 필터링. [칵테일 베이스](#base) |X       |
 |min     |Integer     |최소 도수로 필터링       |X       |
 |max     |Integer     |최대 도수로 필터링       |X       |
 
@@ -327,6 +397,49 @@ GET /api/cocktails/{cocktail_id}
 |tags        |String[]        |칵테일 태그 리스트.|
 |abv         |String          |칵테일 도수. 소수점 한 자리 까지 표시|
 
+
+---
+
+# 칵테일 Favorite
+
+## Request
+
+__URL__
+
+```
+POST /api/cocktails/{cocktail_id}/favorite
+```
+
+## Response
+    HTTP 200 OK
+    Content-type: application/json
+
+|Name        |Type            |Description|
+|------------|----------------|-----------|
+|id          |Integer         |칵테일 고유 아이디|
+|name        |String          |칵테일 이름|
+|garnish     |String          |칵테일 가니쉬 설명|
+|methods     |String[]        |[칵테일 기법](#method) 참고|
+|description |String          |칵테일 설명|
+|ingredients |Recipe[]        |칵테일 재료 리스트. [___RecipeIngredient___](#recipeingredient) 참고|
+|tags        |String[]        |칵테일 태그 리스트.|
+|abv         |String          |칵테일 도수. 소수점 한 자리 까지 표시|
+
+---
+
+# 칵테일 Unfavorite
+
+## Request
+
+__URL__
+
+```
+DELETE /api/cocktails/{cocktail_id}/favorite
+```
+
+## Response
+    HTTP 204 No Content
+    Content-type: application/json
 
 ---
 
