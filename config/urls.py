@@ -7,4 +7,5 @@ urlpatterns = [
     path('api/', include('ingredient.urls')),
     path('api/', include('cocktail.urls')),
     path('api/', include('account.urls')),
+    path('api/', include('authentication.urls')),
 ]

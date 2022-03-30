@@ -42,12 +42,20 @@ DJANGO_APPS = [
 
 PROJECT_APPS = [
     'rest_framework',
+    'rest_framework.authtoken',
     'account',
     'ingredient',
     'cocktail',
+    'authentication',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + PROJECT_APPS
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ]
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

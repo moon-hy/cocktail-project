@@ -1,5 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
@@ -14,12 +16,24 @@ from ingredient.serializers import CategorySerializer, IngredientSerializer
 
 
 class CategoryList(APIView):
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,)
+
     def get(self, request):
         category    = Category.objects.all()
         serializer  = CategorySerializer(category, many=True)
         return Response(serializer.data, status=HTTP_200_OK)
 
 class IngredientList(APIView):
+    authentication_classes = (TokenAuthentication,)
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            permission_classes = (IsAuthenticated, )
+        else:
+            permission_classes = (IsAdminUser, )
+        return [permission() for permission in permission_classes]
+
     def get(self, request):
         ingredients = Ingredient.objects.all()
 
@@ -40,6 +54,15 @@ class IngredientList(APIView):
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
 class IngredientDetail(APIView):
+    authentication_classes = (TokenAuthentication,)
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            permission_classes = (IsAuthenticated, )
+        else:
+            permission_classes = (IsAdminUser, )
+        return [permission() for permission in permission_classes]
+
     def get_object(self, pk):
         try:
             return Ingredient.objects.get(pk=pk)
@@ -73,12 +96,24 @@ class IngredientDetail(APIView):
         return Response(status=HTTP_204_NO_CONTENT)
 
 class IngredientCategoryList(APIView):
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,)
+
     def get(self, request, pk):
         ingredients = Ingredient.objects.filter(category=pk)
         serializer  = IngredientSerializer(ingredients, many=True)
         return Response(serializer.data, status=HTTP_200_OK)
 
 class IngredientShelve(APIView):
+    authentication_classes = (TokenAuthentication,)
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            permission_classes = (IsAuthenticated, )
+        else:
+            permission_classes = (IsAdminUser, )
+        return [permission() for permission in permission_classes]
+        
     def get(self, request, pk):
         account     = request.user.account
         ingredient  = Ingredient.objects.get(pk=pk)

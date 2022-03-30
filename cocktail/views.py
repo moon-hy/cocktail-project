@@ -1,4 +1,5 @@
-from django.shortcuts import get_object_or_404
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.status import (
@@ -13,7 +14,8 @@ from django.db.models import Q, Count
 
 from cocktail.models import Cocktail, Tag
 from cocktail.serializers import CocktailSerializer, CocktailListSerializer, TagSerializer
-from account.models import Account
+from config.permissions import IsOwnerOnly
+
 
 def cocktail_filter(cocktails, request):
     if query := request.query_params.get('query'):
@@ -31,6 +33,9 @@ def cocktail_filter(cocktails, request):
     return cocktails
 
 class CocktailTag(APIView):
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,)
+
     def get(self, request):
         query      = request.query_params.get('query')
         tags        = Tag.objects.all()
@@ -40,6 +45,9 @@ class CocktailTag(APIView):
         return Response(serializer.data, status=HTTP_200_OK)
 
 class CocktailListByTag(APIView):
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,)
+
     def get(self, request, pk):
         tag         = Tag.objects.get(pk=pk)
         cocktails   = tag.cocktails
@@ -48,6 +56,15 @@ class CocktailListByTag(APIView):
         return Response(serializer.data, status=HTTP_200_OK)
 
 class CocktailList(APIView):
+    authentication_classes = (TokenAuthentication,)
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            permission_classes = (IsAuthenticated, )
+        else:
+            permission_classes = (IsAdminUser, )
+        return [permission() for permission in permission_classes]
+        
     def get(self, request):
         cocktails   = Cocktail.objects.all()
         cocktails   = cocktail_filter(cocktails, request)
@@ -55,6 +72,7 @@ class CocktailList(APIView):
         meta        = {
             'total_count': cocktails.count()
         }
+
         return Response({
             'meta': meta,
             'cocktails': serializer.data
@@ -77,6 +95,15 @@ class CocktailList(APIView):
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
 class CocktailDetail(APIView):
+    authentication_classes = (TokenAuthentication,)
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            permission_classes = (IsAuthenticated, )
+        else:
+            permission_classes = (IsAdminUser, )
+        return [permission() for permission in permission_classes]
+        
     def get_object(self, pk):
         try:
             return Cocktail.objects.get(pk=pk)
@@ -94,6 +121,9 @@ class CocktailDetail(APIView):
         return Response(status=HTTP_204_NO_CONTENT)
 
 class CocktailFavorite(APIView):
+    authentication_classes = (TokenAuthentication, )
+    permission_classes = (IsOwnerOnly, IsAuthenticated)
+
     def get(self, request, pk):
         account     = request.user.account
         cocktail    = Cocktail.objects.get(pk=pk)
@@ -120,6 +150,9 @@ class CocktailFavorite(APIView):
         return Response(status=HTTP_204_NO_CONTENT)
 
 class CocktailAvilable(APIView):
+    authentication_classes = (TokenAuthentication, )
+    permission_classes = (IsOwnerOnly, IsAuthenticated)
+    
     def get(self, request):
         account     = request.user.account
         shelf_set   = set(account.shelf.all())
@@ -135,4 +168,11 @@ class CocktailAvilable(APIView):
 
         serializer  = CocktailListSerializer(cocktails, many=True)
 
-        return Response(serializer.data, status=HTTP_200_OK)
+        meta        = {
+            'total_count': cocktails.count()
+        }
+        
+        return Response({
+            'meta': meta,
+            'cocktails': serializer.data
+        }, status=HTTP_200_OK)

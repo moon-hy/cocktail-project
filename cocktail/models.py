@@ -55,8 +55,7 @@ class Recipe(models.Model):
     cocktail    = models.ForeignKey(
         'Cocktail',
         related_name='recipe',
-        on_delete=models.CASCADE,
-        blank=True
+        on_delete=models.CASCADE
     )
     ingredient  = models.ForeignKey(
         'ingredient.Ingredient',
@@ -110,6 +109,3 @@ class Cocktail(models.Model):
 
     def __str__(self):
         return self.name
-
-    def is_available(self, account):
-        return all([ingredient in account.shelf for ingredient in self.ingredients])
